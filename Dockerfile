@@ -19,12 +19,25 @@ ADD ./spack.yaml /root/spack.yml
 ADD ./package.py /root/spack/var/spack/repos/builtin/packages/darshan-runtime/
 ADD ./darshan-util-package.py /root/spack/var/spack/repos/builtin/packages/darshan-util/package.py
 
-# RUN . ~/spack/share/spack/setup-env.sh \
-#     && spack env create mofka /root/spack.yml \
-#     && spack env activate mofka \
-#     && spack repo add /root/mochi-spack-packages \
-#     && spack compiler find \
-#     && spack install
+RUN . ~/spack/share/spack/setup-env.sh \
+    && spack env create mofka /root/spack.yml
+
+RUN . ~/spack/share/spack/setup-env.sh \
+    && spack -e mofka compiler find
+
+RUN . ~/spack/share/spack/setup-env.sh \
+    && spack -e mofka repo add ~/mochi-spack-packages
+
+RUN . ~/spack/share/spack/setup-env.sh \
+    && spack -e mofka external find --not-buildable cmake autoconf automake m4 libtool
+
+RUN . ~/spack/share/spack/setup-env.sh \
+    && spack -e mofka concretize -f
+
+RUN . ~/spack/share/spack/setup-env.sh \
+    && spack -e mofka install
+
+
 #     && pip install proxystore[all] kafka-python globus-compute-endpoint diaspora-event-sdk
 
 # RUN apt-get install openjdk-11-jdk -y \
