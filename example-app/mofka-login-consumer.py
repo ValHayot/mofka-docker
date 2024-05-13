@@ -5,39 +5,20 @@ import pyssg
 
 from dsaas_client.api import save_output
 
-ssg_file = 'mofka.ssg'
-mofka_protocol = 'ofi+tcp'
+import helpers
+
 topic = 'report'
+consumer_name = 'mofka-login-consumer'
 
-def my_data_selector(metadata, descriptor):
-    return descriptor
-
-def my_data_broker(metadata, descriptor):
-    data = bytearray(descriptor.size)
-    return [data]
-
-engine = Engine(mofka_protocol, use_progress_thread=True)
+engine = Engine(helpers.mofka_protocol, use_progress_thread=True)
 client = mofka.Client(engine.mid)
 pyssg.init()
+MOFKA_SERVICE = client.connect(helpers.ssg_file)
 
-service = client.connect(ssg_file)
-
-try:
-    validator = mofka.Validator.from_metadata()
-    selector = mofka.PartitionSelector.from_metadata()
-    serializer = mofka.Serializer.from_metadata()
-    service.create_topic(topic_name=topic, validator=validator, selector=selector, serializer=serializer)
-    service.add_memory_partition(topic, 0)
-except:
-    pass
-
-topic = service.open_topic(topic)
-consumer_name = "mofka_consumer"
-consumer = topic.consumer(
-    name=consumer_name,
-    batch_size=1,
-    data_broker=my_data_broker,
-    data_selector=my_data_selector
+consumer = helpers.create_mofka_consumer(
+    topic_name=topic,
+    consumer_name=consumer_name,
+    service=MOFKA_SERVICE
 )
 
 # pull messages from provider
@@ -48,6 +29,7 @@ while True:
     try:
         metadata = eval(event.metadata)
 
+        print('saving output', metadata, data)
         if metadata['action'] == 'save_output':
             save_output(data=data, name=metadata['name'], description=metadata['description'], sources=metadata['sources'])
     except:
