@@ -1,3 +1,6 @@
+import pandas as pd
+from io import StringIO
+
 from pymargo.core import Engine
 from pymargo.core import client as client_mode
 import pymofka_client as mofka
@@ -29,7 +32,8 @@ while True:
     try:
         metadata = eval(event.metadata)
 
-        print('saving output', metadata, data)
+        print('saving output', metadata)
+        print(pd.read_csv(StringIO(data)))
         if metadata['action'] == 'save_output':
             save_output(data=data, name=metadata['name'], description=metadata['description'], sources=metadata['sources'])
     except:
