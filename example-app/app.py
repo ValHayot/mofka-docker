@@ -31,7 +31,7 @@ def load_sources(source_1: int = 1, source_2: int = 2):
     topic_2 = 'source_2'
 
     d_1 = load_from_event(topic_name=topic_1)
-    print('loaded d1')
+    print('loaded d1', d_1[0:100])
     d_2 = load_from_event(topic_name=topic_2)
     print('loaded d2')
     
@@ -49,7 +49,7 @@ def write_report(report: pd.DataFrame) -> None:
         service=MOFKA_SERVICE
     )
     
-    print('pushing producer event')
+    print('pushing producer event', report)
     f = producer.push(
         {
             "action": "save_output",
