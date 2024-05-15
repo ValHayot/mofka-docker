@@ -16,8 +16,6 @@ RUN git clone --depth=100 https://github.com/spack/spack.git ~/spack
 RUN git clone https://github.com/mochi-hpc/mochi-spack-packages.git ~/mochi-spack-packages
 
 ADD ./spack.yaml /root/spack.yml
-ADD ./package.py /root/spack/var/spack/repos/builtin/packages/darshan-runtime/
-ADD ./darshan-util-package.py /root/spack/var/spack/repos/builtin/packages/darshan-util/package.py
 
 RUN . ~/spack/share/spack/setup-env.sh \
     && spack env create mofka /root/spack.yml

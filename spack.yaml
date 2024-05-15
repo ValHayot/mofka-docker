@@ -3,10 +3,6 @@ spack:
   - pkg-config
   - py-mochi-ssg~mpi ^mpich
   - mofka
-#  - darshan-runtime@dask ~mpi
-#  - darshan-util@dask
-#  - py-darshan
-#  - py-pip
   view: true
   concretizer:
     unify: true
