@@ -14,13 +14,13 @@ def my_data_broker(metadata, descriptor):
     data = bytearray(descriptor.size)
     return [data]
 
-def start_mofka(ssg_file: str='mofka.ssg', mofka_protocol: str='ofi+tcp') -> object:
-    engine = Engine(mofka_protocol, use_progress_thread=True)
-    client = mofka.Client(engine.mid)
-    pyssg.init()
-    service = client.connect(ssg_file)
-
-    return service
+# def start_mofka(ssg_file: str='mofka.ssg', mofka_protocol: str='ofi+tcp') -> object:
+#     engine = Engine(mofka_protocol, use_progress_thread=True)
+#     client = mofka.Client(engine.mid)
+#     pyssg.init()
+#     service = client.connect(ssg_file)
+# 
+#     return service
 
 def create_mofka_producer(
     topic_name: str,
@@ -34,7 +34,8 @@ def create_mofka_producer(
         serializer = mofka.Serializer.from_metadata()
         service.create_topic(topic_name=topic_name, validator=validator, selector=selector, serializer=serializer)
         service.add_memory_partition(topic_name, 0)
-    except:
+    except Exception as e:
+        print(f'mofka producer: ERROR: {e}')
         pass # topic has already been created
 
     topic = service.open_topic(topic_name)
@@ -57,8 +58,9 @@ def create_mofka_consumer(
         serializer = mofka.Serializer.from_metadata()
         service.create_topic(topic_name=topic_name, validator=validator, selector=selector, serializer=serializer)
 
-        service.add_memory_partition(topic, 0, 'abt_pool')
-    except:
+        service.add_memory_partition(topic_name, 0)
+    except Exception as e:
+        print(f'mofka consumer: WARNING: {e}')
         pass
 
     topic = service.open_topic(topic_name)

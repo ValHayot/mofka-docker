@@ -11,6 +11,10 @@ spack load py-pip
 bedrock ofi+tcp -c config.json &
 bpid=`echo "$!"`
 
+mofkactl topic create source_1 --groupfile mofka.ssg
+mofkactl topic create source_2 --groupfile mofka.ssg
+mofkactl topic create report  --groupfile mofka.ssg
+
 # Create input data events
 python example-app/mofka-login-producer.py source_1 1
 python example-app/mofka-login-producer.py source_2 2

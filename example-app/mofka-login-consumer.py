@@ -24,18 +24,17 @@ consumer = helpers.create_mofka_consumer(
     service=MOFKA_SERVICE
 )
 
-# pull messages from provider
-while True:
-    f = consumer.pull()
-    event = f.wait()
-    data = event.data[0].decode("utf-8", "replace")
-    try:
-        metadata = eval(event.metadata)
+# pull report from provider
+f = consumer.pull()
+event = f.wait()
+data = event.data[0].decode("utf-8", "replace")
+try:
+    metadata = eval(event.metadata)
 
-        print('saving output', metadata)
-        print(pd.read_csv(StringIO(data)))
-        if metadata['action'] == 'save_output':
-            save_output(data=data, name=metadata['name'], description=metadata['description'], sources=metadata['sources'])
-    except:
-        print("data failure: ", data, flush=True)
+    print('saving output', metadata)
+    print(pd.read_csv(StringIO(data)))
+    if metadata['action'] == 'save_output':
+        save_output(data=data, name=metadata['name'], description=metadata['description'], sources=metadata['sources'])
+except:
+    print("data failure: ", data, flush=True)
 
