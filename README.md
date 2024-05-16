@@ -24,14 +24,7 @@ docker build -t mofka .
 To run the container, the following command may be used. The current working directory (root of the repo) is mounted to be able to access `mofka_producer.py` and `mofka_client.py` scripts.
 
 ```
-docker run --rm -it -v $PWD:$PWD -w $PWD mofka /bin/bash
-```
-
-Once in the container, it is necessary to load the spack environment:
-
-```
-. ~/space/share/spack/setup-env.sh
-spack env activate mofka -p
+docker run --rm -it -v $PWD:$PWD -w $PWD mofka
 ```
 
 ### Running the scripts

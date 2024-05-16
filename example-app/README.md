@@ -8,15 +8,34 @@ The goal of this example is to demonstrate how Mofka could be used within the AE
 
 ### Locally
 
-The DSaaS client must be installed to run this code. To download:
-
-`pip install git+https://github.com/nsf-resume/dsaas-client.git`
-
 Start the Bedrock server
 
 `bedrock ofi+tcp -c config.json &`
 
-On a login node, fetch data from DSaaS and publish as an event. The example app requires two data inputs, therefore this needs to be executed twice for each input.
+Create all topics and assign them memory partitions. For this example, we will create three topics,
+two for the sources (source_1 and source_2) and another for the output report.
+
+```
+mofkactl topic create source_1 --groupfile mofka.ssg
+mofkactl partition add source_1 \
+	--type memory \
+	--rank 0 \
+	--groupfile mofka.ssg
+
+mofkactl topic create source_2 --groupfile mofka.ssg
+mofkactl partition add source_2 \
+	--type memory \
+	--rank 0 \
+	--groupfile mofka.ssg
+
+mofkactl topic create report --groupfile mofka.ssg
+mofkactl partition add report \
+	--type memory \
+	--rank 0 \
+	--groupfile mofka.ssg
+```
+
+Fetch the data from AERO and publish as an event. The example app requires two data inputs, therefore this needs to be executed twice for each input.
 
 ```
 python example-app/mofka-login-producer.py source_1 1

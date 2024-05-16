@@ -35,17 +35,16 @@ RUN . ~/spack/share/spack/setup-env.sh \
 RUN . ~/spack/share/spack/setup-env.sh \
     && spack -e mofka install
 
+RUN . ~/spack/share/spack/setup-env.sh \
+    && spack env activate mofka -p \
+    && spack load py-pip \
+    && pip install git+https://github.com/nsf-resume/dsaas-client.git
 
-#     && pip install proxystore[all] kafka-python globus-compute-endpoint diaspora-event-sdk
+# temp solution until we fix dsaas code
+RUN mkdir -p ~/.local/share/dsaas
 
-# RUN apt-get install openjdk-11-jdk -y \
-#     && wget https://downloads.apache.org/kafka/3.6.1/kafka_2.13-3.6.1.tgz \
-#     && tar xvf kafka_2.13-3.6.1.tgz \
-#     && mv kafka_2.13-3.6.1 /usr/local/kafka
-
-# RUN echo "/usr/local/kafka/bin/zookeeper-server-start.sh /usr/local/kafka/config/zookeeper.properties &" >> ~/.bashrc
-# RUN echo "/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties &" >> ~/.bashrc
-# RUN echo ". ~/spack/share/spack/setup-env.sh" >> ~/.bashrc
-# RUN echo "spack env activate mofka -p" >> ~/.bashrc
-# SHELL ["/bin/bash -l -c"]
+RUN echo ". ~/spack/share/spack/setup-env.sh" >> ~/.bashrc
+RUN echo "spack env activate mofka -p" >> ~/.bashrc
+RUN echo "spack load py-pip" >> ~/.bashrc
+SHELL ["/bin/bash -l -c"]
 
