@@ -69,17 +69,18 @@ spack install
 This repo contains two helper scripts for running on Polaris, namely: `run-polaris.sh` and `pbs-submit.sh`. The `run-polaris.sh` script:
 - loads the Spack environment (assuming that the instructions above were followed exactly)
 - starts the Bedrock service using ofi+tcp on the login node
+- creates the necessary topics and assigns them memory partitions
 - creates a login node producer and submits two events for the data inputs
 - starts the app (using `pbs-submit.sh`) on the compute node that will consume the previous data input event and publish the report as an event
 - creates a login node consumer that should receive the report from the compute node's producer
 
+The `run-polaris` script takes as input a single argument representing the communication protocol to use.
+
 To run the scripts, from the root folder, execute:
-`bash example-app/run-polaris.sh`
+`bash example-app/run-polaris.sh <mofka_communication_protocol>`
+
+e.g.,
+`bash example-app/run-polaris.sh "ofi+cxi://"`
+
 
 **NOTE**: `pbs-submit.sh` needs to be modified to use the correct allocation.
-
-**NOTE 2**: Communication protocol currently hardcoded (to be fixed). To change communication protocol, edit `run-polaris.sh` and `helpers.py`
-
-
-
-
