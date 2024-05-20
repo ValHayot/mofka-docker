@@ -12,6 +12,10 @@ Start the Bedrock server
 
 `bedrock ofi+tcp -c config.json &`
 
+Export the Margo communication protocol into the `MOFKA_PROTOCOL` environment variable.
+
+`export MOFKA_PROTOCOL="ofi+tcp://"`
+
 Create all topics and assign them memory partitions. For this example, we will create three topics,
 two for the sources (source_1 and source_2) and another for the output report.
 
