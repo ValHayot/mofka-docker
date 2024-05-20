@@ -1,6 +1,9 @@
 import pandas as pd
 from io import StringIO
 
+from diaspora_event_sdk import Client
+from diaspora_event_sdk import KafkaProducer
+
 from pymargo.core import Engine
 from pymargo.core import client as client_mode
 import pymofka_client as mofka
@@ -12,6 +15,10 @@ import helpers
 
 topic = 'report'
 consumer_name = 'mofka-login-consumer'
+
+c = Client()
+c.register_topic(topic)
+p = KafkaProducer()
 
 engine = Engine(helpers.mofka_protocol, use_progress_thread=True)
 client = mofka.Client(engine.mid)
@@ -35,6 +42,8 @@ try:
     print(pd.read_csv(StringIO(data)))
     if metadata['action'] == 'save_output':
         save_output(data=data, name=metadata['name'], description=metadata['description'], sources=metadata['sources'])
+    p.send(topic, metadata)
+    p.flush()
 except:
     print("data failure: ", data, flush=True)
 
