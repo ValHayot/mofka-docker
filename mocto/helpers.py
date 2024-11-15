@@ -13,6 +13,8 @@ def produce_data(producer, topic: str, run_conf: str, exp: int, events: int):
 
 def consume_data(consumer, run_conf: str):
     start = time.perf_counter_ns()
+    size: int = 0
+
     while True:
         try:
             event = next(consumer)

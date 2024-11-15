@@ -25,8 +25,6 @@ mofka_endpoint = ""  # polaris
 
 REGION = "us-east-1"
 
-run_conf = sys.argv[1]
-
 
 def invoke_exchange(
     producer_type: Literal["octopus", "mofka"],
@@ -34,6 +32,7 @@ def invoke_exchange(
     topic_mofka: str,
     topic_octopus: str,
     subscriber_name="exc",
+    groupfile="mofka.json",
 ):
     import time
     from proxystore_ex.stream.exchange import Exchange
@@ -41,7 +40,9 @@ def invoke_exchange(
     if consumer_type == "mofka":
         from mocto.mofka import mconsumer
 
-        consumer = mconsumer(topic=topic_mofka, subscriber_name=subscriber_name)
+        consumer = mconsumer(
+            topic=topic_mofka, subscriber_name=subscriber_name, groupfile=groupfile
+        )
     else:
         from mocto.octopus import oconsumer
 
@@ -50,20 +51,21 @@ def invoke_exchange(
     if producer_type == "mofka":
         from mocto.mofka import mproducer
 
-        producer = mproducer(topic=topic_mofka)
+        producer = mproducer(topic=topic_mofka, groupfile=groupfile)
     else:
+        from pathlib import Path
         from mocto.octopus import oproducer
 
-        producer = oproducer(topic=topic_octopus)
+        producer = oproducer(topic=topic_octopus, store_dir=Path.home() / "octopus")
 
     e = Exchange(producer=producer, consumer=consumer)
 
     start_f = time.perf_counter_ns()
-    e.forward(topic=topic_o)
+    e.forward(topic=topic_octopus)
     end_f = time.perf_counter_ns()
 
-    e.close(topics=[topic_o])
-    return f"{run_conf},forward,0,{start_f},{end_f},{(end_f - start_f)/10**9}"
+    e.close(topics=[topic_octopus])
+    return f"{consumer_type}:{producer_type},forward,0,{start_f},{end_f},{(end_f - start_f)/10**9}"
 
 
 def distributed_m2o(
@@ -73,24 +75,37 @@ def distributed_m2o(
     topic_o = "octopus-test2"
 
     with Executor(endpoint_id=mofka_endpoint) as gce:
-        f = gce.submit(conf_mofka)
-        f.result()
 
-        f_mproduce = gce.submit(mofka_produce, topic=topic, exp=exp, events=events)
+        print("Executing mofka 2 octopus")
+        # f = gce.submit(conf_mofka, topic=topic)
+        # f.result()
+        # print("Submitted config")
+
+        f_mproduce = gce.submit(
+            mofka_produce,
+            topic=topic,
+            exp=exp,
+            events=events,
+            groupfile="/lus/eagle/projects/Diaspora/valerie/mofka-docker/mofka.json",
+        )
+        print("Produced data")
         f_exchange = gce.submit(
             invoke_exchange,
             producer_type="octopus",
             consumer_type="mofka",
             topic_mofka=topic,
             topic_octopus=topic_o,
+            groupfile="/lus/eagle/projects/Diaspora/valerie/mofka-docker/mofka.json",
         )
+        print("Exchanged data")
+        print(f_mproduce.result())
+        print(f_exchange.result())
 
     with Executor(endpoint_id=octopus_endpoint) as gce:
         f_oconsume = gce.submit(octopus_consume, topic=topic_o)
+        print("consumed data")
 
-    print(f_mproduce.result())
-    print(f_exchange.result())
-    print(f_oconsume.result())
+        print(f_oconsume.result())
 
 
 def distributed_o2m(
@@ -102,7 +117,10 @@ def distributed_o2m(
 if __name__ == "__main__":
 
     start_time = time.perf_counter_ns()
-    distributed_m2o()
+    distributed_m2o(
+        mofka_endpoint="361e399a-911d-4ef8-a2ac-b5b3e6aa9dc8",
+        octopus_endpoint="819b0a9d-68bd-4707-a056-2c152ff3054b",
+    )
     end_time = time.perf_counter_ns()
 
-    print(f"Total runtime for {run_conf}: {(end_time - start_time)/10**9}s")
+    print(f"Total runtime: {(end_time - start_time)/10**9}s")

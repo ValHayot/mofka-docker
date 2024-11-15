@@ -30,7 +30,7 @@ def octopus_conf():
         "sasl.mechanisms": "OAUTHBEARER",
         "oauth_cb": oauth_cb,
         "group.id": "mygroup",
-        "auto.offset.reset": "latest",
+        "auto.offset.reset": "earliest",
     }
 
     return conf
