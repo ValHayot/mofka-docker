@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=64.0", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mocto"
+version = "0.0.1"
+authors = [
+    {name = "Valerie Hayot-Sasson", email = "vhayot@uchicago.edu"},
+]
+
+description = "Mofka/Octopus ProxyStore integration benchmarking with Globus Compute"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+dependencies = [
+    "proxystore>=0.6.5",
+    "proxystore_ex@git+https://github.com/proxystore/extensions.git@exchange",
+    "globus-compute-sdk"
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.setuptools.packages.find]
+exclude = ["example-app*"]
+namespaces = false
