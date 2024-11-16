@@ -18,11 +18,8 @@ def consume_data(consumer, run_conf: str):
     while True:
         try:
             event = next(consumer)
-            size = len(event)
+            size += len(event)
         except Exception as e:
-            print(e)
             break
     end = time.perf_counter_ns()
     return f"{run_conf},consume,{size},{start},{end},{(end - start)/10**9}"
-
-    consumer.close()

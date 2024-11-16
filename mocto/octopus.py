@@ -3,7 +3,7 @@ import os
 from confluent_kafka import Consumer, Producer
 from aws_msk_iam_sasl_signer import MSKAuthTokenProvider
 
-from proxystore.connectors.file import FileConnector
+from proxystore.connectors.endpoint import EndpointConnector
 from proxystore.store import Store
 from proxystore.stream import StreamConsumer
 from proxystore.stream import StreamProducer
@@ -38,8 +38,8 @@ def octopus_conf():
 
 def oproducer(
     topic: str,
+    endpoints: list[str],
     store_name: str = "example",
-    store_dir: str = "./octopus_dir",
     exp: int = 5,
     events: int = 1,
 ):
@@ -47,7 +47,8 @@ def oproducer(
 
     producer = Producer(conf)
     publisher = KafkaPublisher(client=producer)
-    store = Store(store_name, FileConnector(store_dir))
+    conn = EndpointConnector(endpoints=endpoints)
+    store = Store(store_name, connector=conn)
     oprod = StreamProducer(publisher=publisher, stores={topic: store})
     return oprod
 
@@ -63,13 +64,13 @@ def oconsumer(topic: str):
 
 def octopus_produce(
     topic: str,
+    endpoints: list[str],
     store_name: str = "example",
-    store_dir: str = "./octopus_dir",
     exp: int = 5,
     events: int = 1,
 ):
     oprod = oproducer(
-        topic=topic, store_name=store_name, store_dir=store_dir, exp=exp, events=events
+        topic=topic, store_name=store_name, endpoints=endpoints, exp=exp, events=events
     )
     bench = produce_data(oprod, run_conf="octopus", topic=topic, exp=exp, events=events)
     return bench

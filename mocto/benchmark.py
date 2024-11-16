@@ -31,6 +31,7 @@ def invoke_exchange(
     consumer_type: Literal["octopus", "mofka"],
     topic_mofka: str,
     topic_octopus: str,
+    endpoints=list[str],
     subscriber_name="exc",
     groupfile="mofka.json",
 ):
@@ -56,7 +57,7 @@ def invoke_exchange(
         from pathlib import Path
         from mocto.octopus import oproducer
 
-        producer = oproducer(topic=topic_octopus, store_dir=Path.home() / "octopus")
+        producer = oproducer(topic=topic_octopus, endpoints=endpoints)
 
     e = Exchange(producer=producer, consumer=consumer)
 
@@ -73,6 +74,11 @@ def distributed_m2o(
 ):
     topic = "proxystream"
     topic_o = "octopus-test2"
+    groupfile = "/lus/eagle/projects/Diaspora/valerie/mofka-docker/mofka.json"
+    endpoints = [
+        "1926a2db-90b2-47c1-90e4-611edd61194c",
+        "2e5c79dc-86e3-408e-b9da-8fcba840588a",
+    ]
 
     with Executor(endpoint_id=mofka_endpoint) as gce:
 
@@ -86,26 +92,28 @@ def distributed_m2o(
             topic=topic,
             exp=exp,
             events=events,
-            groupfile="/lus/eagle/projects/Diaspora/valerie/mofka-docker/mofka.json",
+            groupfile=groupfile,
         )
         print("Produced data")
+
+    with Executor(endpoint_id=octopus_endpoint) as gce:
+        f_oconsume = gce.submit(octopus_consume, topic=topic_o)
+        print("consumed data")
+
+    with Executor(endpoint_id=mofka_endpoint) as gce:
         f_exchange = gce.submit(
             invoke_exchange,
             producer_type="octopus",
             consumer_type="mofka",
             topic_mofka=topic,
             topic_octopus=topic_o,
-            groupfile="/lus/eagle/projects/Diaspora/valerie/mofka-docker/mofka.json",
+            groupfile=groupfile,
+            endpoints=endpoints,
         )
         print("Exchanged data")
-        print(f_mproduce.result())
-        print(f_exchange.result())
-
-    with Executor(endpoint_id=octopus_endpoint) as gce:
-        f_oconsume = gce.submit(octopus_consume, topic=topic_o)
-        print("consumed data")
-
-        print(f_oconsume.result())
+    print(f_mproduce.result())
+    print(f_exchange.result())
+    print(f_oconsume.result())
 
 
 def distributed_o2m(
