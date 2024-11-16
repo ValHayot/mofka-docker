@@ -7,7 +7,6 @@ def produce_data(producer, topic: str, run_conf: str, exp: int, events: int):
     for i in range(events):
         producer.send(topic, "1" * 10**exp, evict=True)
     end = time.perf_counter_ns()
-    producer.close(topics=[topic])
     return f"{run_conf},produce,{10**exp},{start},{end},{(end - start)/10**9}"
 
 
