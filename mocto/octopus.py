@@ -30,7 +30,7 @@ def octopus_conf():
         "sasl.mechanisms": "OAUTHBEARER",
         "oauth_cb": oauth_cb,
         "group.id": "mygroup",
-        "auto.offset.reset": "earliest",
+        "auto.offset.reset": "latest",
     }
 
     return conf
@@ -77,6 +77,11 @@ def octopus_produce(
 
 
 def octopus_consume(topic: str):
+    # with open(
+    #     "/Users/valeriehayot-sasson/postdoc/mofka-docker/octopus-consumer.txt",
+    #     "a+",
+    # ) as f:
+    #     f.write("consumer called\n")
     consumer = oconsumer(topic=topic)
     bench = consume_data(consumer, run_conf="octopus")
     consumer.close()

@@ -1,3 +1,4 @@
+import argparse
 import sys
 import time
 
@@ -5,25 +6,8 @@ from typing import Literal
 
 from globus_compute_sdk import Executor
 
-
-from mocto.mofka import conf_mofka
 from mocto.mofka import mofka_produce
 from mocto.octopus import octopus_consume
-
-
-topic = "proxystream"
-topic_o = "octopus-test2"
-
-try:
-    exp = int(sys.argv[2])
-except Exception as e:
-    exp = 5
-
-octopus_endpoint = ""  # laptop
-mofka_endpoint = ""  # polaris
-
-
-REGION = "us-east-1"
 
 
 def invoke_exchange(
@@ -54,7 +38,6 @@ def invoke_exchange(
 
         producer = mproducer(topic=topic_mofka, groupfile=groupfile)
     else:
-        from pathlib import Path
         from mocto.octopus import oproducer
 
         producer = oproducer(topic=topic_octopus, endpoints=endpoints)
@@ -70,12 +53,16 @@ def invoke_exchange(
 
 
 def distributed_m2o(
-    mofka_endpoint: str, octopus_endpoint: str, exp: int = 5, events: int = 1
+    mofka_endpoint: str,
+    octopus_endpoint: str,
+    proxystore_endpoints: list[str],
+    exp: int = 5,
+    events: int = 1,
 ):
     topic = "proxystream"
     topic_o = "octopus-test2"
     groupfile = "/lus/eagle/projects/Diaspora/valerie/mofka-docker/mofka.json"
-    endpoints = [
+    proxystore_endpoints = [
         "1926a2db-90b2-47c1-90e4-611edd61194c",
         "2e5c79dc-86e3-408e-b9da-8fcba840588a",
     ]
@@ -100,6 +87,7 @@ def distributed_m2o(
         f_oconsume = gce.submit(octopus_consume, topic=topic_o)
         print("consumed data")
 
+    time.sleep(10)
     with Executor(endpoint_id=mofka_endpoint) as gce:
         f_exchange = gce.submit(
             invoke_exchange,
@@ -108,7 +96,7 @@ def distributed_m2o(
             topic_mofka=topic,
             topic_octopus=topic_o,
             groupfile=groupfile,
-            endpoints=endpoints,
+            endpoints=proxystore_endpoints,
         )
         print("Exchanged data")
     print(f_mproduce.result())
@@ -122,8 +110,19 @@ def distributed_o2m(
     pass
 
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser(
+        prog="MoctoBench",
+        description="Rudimentary benchmark for testing the exchange between Mofka and Octopus",
+    )
 
+    parser.add_argument(
+        "run_config",
+        type=str,
+        choices=["mofka2octopus", "octopus2mofka"],
+        help="The communication flow configuration",
+    )
+    parser.add_argument()
     start_time = time.perf_counter_ns()
     distributed_m2o(
         mofka_endpoint="361e399a-911d-4ef8-a2ac-b5b3e6aa9dc8",
@@ -132,3 +131,7 @@ if __name__ == "__main__":
     end_time = time.perf_counter_ns()
 
     print(f"Total runtime: {(end_time - start_time)/10**9}s")
+
+
+if __name__ == "__main__":
+    main()
